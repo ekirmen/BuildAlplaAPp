@@ -49,19 +49,21 @@ class _HomeScreenState extends State<HomeScreen> {
   
   void _setupRealtimeSubscription() {
     Supabase.instance.client
-        .channel('public:users')
+        .channel('public:industrial_data')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
-          table: 'users',
+          table: 'industrial_data',
           callback: (payload) {
-             final newUser = payload.newRecord;
-             final username = newUser['username'] ?? 'Desconocido';
+             final newRecord = payload.newRecord;
+             final linea = newRecord['linea'] ?? 'Línea desconocida';
+             final causa = newRecord['causa'] ?? 'Sin causa';
+             final minutos = newRecord['minutos'] ?? 0;
              
              NotificationService().showNotification(
                id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-               title: '¡Nuevo Usuario Realtime!',
-               body: 'Se ha creado el usuario "$username" remotamente.',
+               title: '¡Nuevo Dato de Producción!',
+               body: 'Línea $linea: $causa ($minutos min)',
              );
           },
         )
