@@ -7,7 +7,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
-import 'package:permission_handler/permission_handler.dart'; 
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class UpdateService {
   static const String githubUser = 'ekirmen';
@@ -96,23 +97,24 @@ class UpdateService {
           children: [
             const Text('Se ha encontrado una actualización.'),
             const SizedBox(height: 10),
+            const Text('Novedades:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.all(8),
               width: double.infinity,
+              height: 200, // Altura fija para hacer scroll si es largo
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Novedades:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                  const SizedBox(height: 4),
-                  Text(notes.isEmpty ? 'Mejoras generales y correcciones.' : notes, 
-                       style: const TextStyle(fontSize: 12),
-                       maxLines: 4, 
-                       overflow: TextOverflow.ellipsis),
-                ],
+              child: SingleChildScrollView(
+                child: MarkdownBody(
+                  data: notes.isEmpty ? 'Mejoras generales y correcciones.' : notes,
+                  styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                    p: const TextStyle(fontSize: 12),
+                  ),
+                ),
               ),
             ),
           ],
