@@ -227,11 +227,39 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
 
   Future<void> _installApk(String path) async {
     debugPrint('Intentando instalar desde: $path');
-    final result = await OpenFile.open(path);
-    debugPrint('Resultado instalación: ${result.message}');
-    if (result.type != ResultType.done) {
-       // Si falla, puede ser permisos
+    
+    final file = File(path);
+    if (!file.existsSync()) {
+      _showErrorDialog('El archivo descargado no se encuentra en:\n$path');
+      return;
     }
+
+    // Algunos dispositivos necesitan un pequeño delay para liberar el lock del archivo
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final result = await OpenFile.open(path, type: "application/vnd.android.package-archive");
+    debugPrint('Resultado instalación: ${result.message}');
+    
+    if (result.type != ResultType.done) {
+       _showErrorDialog('No se pudo abrir el instalador:\n${result.message}\n\nTipo: ${result.type}');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ Error de Instalación'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
   
   String _formatBytes(int bytes) {
