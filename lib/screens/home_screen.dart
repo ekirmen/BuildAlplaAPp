@@ -14,6 +14,7 @@ import '../widgets/settings_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/notification_service.dart';
 import '../services/update_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,16 +25,25 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
     _loadInitialData();
     _setupRealtimeSubscription();
+    _loadVersion();
     
     // Verificar actualizaciones automáticamente
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateService().checkForUpdates(context);
+    });
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = 'v${info.version}';
     });
   }
   
@@ -84,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       const _NavigationItem(
         icon: Icons.factory,
-        label: 'Producción',
+        label: 'Fábrica',
         index: 2,
       ),
     ];
@@ -153,16 +163,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Alpla Dashboard',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Alpla Dashboard',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (_appVersion.isNotEmpty)
+              Text(
+                _appVersion,
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white70,
+                ),
+              ),
+          ],
         ),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_sync),
+            tooltip: 'Buscar Actualización',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Buscando actualizaciones...')),
+              );
+              UpdateService().checkForUpdates(context, showNoUpdate: true);
+            },
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Center(
