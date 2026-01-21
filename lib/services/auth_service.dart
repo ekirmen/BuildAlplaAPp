@@ -117,6 +117,15 @@ class AuthService {
     }
   }
 
+  Future<(bool, String)> deleteUser(String username) async {
+    try {
+      await _supabase.from('users').delete().eq('username', username);
+      return (true, 'Usuario eliminado');
+    } catch (e) {
+      return (false, 'Error: $e');
+    }
+  }
+
   Future<List<UserModel>> getAllUsers() async {
     try {
       final response = await _supabase.from('users').select();

@@ -585,6 +585,40 @@ class _UsersTabState extends State<_UsersTab> {
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('⚠️ Borrar Usuario'),
+                  content: Text('¿Estás seguro de que quieres borrar a ${user['username']}? Esta acción es irreversible.'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                      onPressed: () => Navigator.pop(context, true), 
+                      child: const Text('Borrar')
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true && context.mounted) {
+                 final authService = AuthService(Supabase.instance.client);
+                 final (success, message) = await authService.deleteUser(user['username']);
+                 if (context.mounted) {
+                   Navigator.pop(context); // Cerrar diálogo de edición
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     SnackBar(content: Text(message), backgroundColor: success ? Colors.green : Colors.red),
+                   );
+                   if (success) _loadUsers();
+                 }
+              }
+            },
+            icon: const Icon(Icons.delete, color: Colors.red),
+            tooltip: 'Borrar Usuario',
+          ),
+          const SizedBox(width: 8), // Spacer
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
