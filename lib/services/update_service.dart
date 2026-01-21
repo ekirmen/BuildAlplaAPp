@@ -7,14 +7,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
-// import 'package:permission_handler/permission_handler.dart'; // No suele ser necesario para getApplicationDocumentsDirectory en versiones modernas, pero open_file lo maneja.
+import 'package:permission_handler/permission_handler.dart'; 
 
 class UpdateService {
-  // ⚠️ CONFIGURA AQUÍ TU REPOSITORIO DE GITHUB
-  static const String githubUser = 'ekirmen';
-  static const String githubRepo = 'BuildAlplaAPp';
-  
-  Future<void> checkForUpdates(BuildContext context, {bool showNoUpdate = false}) async {
+  // ... (existing code)
+
+
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       final String currentVersion = packageInfo.version;
@@ -172,6 +170,20 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
   }
 
   Future<void> _startDownload() async {
+    // 1. Solicitar permiso ANTES de descargar
+    if (!await Permission.requestInstallPackages.isGranted) {
+      if (mounted) setState(() => _status = 'Solicitando permisos...');
+      await Future.delayed(const Duration(milliseconds: 500)); // Dar tiempo a que usuario lea
+      final status = await Permission.requestInstallPackages.request();
+      if (!status.isGranted) {
+        if (mounted) {
+          Navigator.pop(context);
+          _showErrorDialog('Se requiere permiso para instalar actualizaciones.\nVe a Configuración y permítelo para esta app.');
+        }
+        return;
+      }
+    }
+
     try {
       Directory? dir = await getExternalStorageDirectory(); 
       // Fallback si no hay external (ej. en algunos emuladores o configs)
@@ -184,7 +196,7 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
         savePath,
         cancelToken: _cancelToken,
         onReceiveProgress: (received, total) {
-          if (total != -1) {
+          if (total != -1 && mounted) {
             setState(() {
               _progress = received / total;
               _receivedBytes = _formatBytes(received);
@@ -202,23 +214,15 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
           _progress = 1.0;
         });
         
-        Navigator.pop(context); // Cerrar diálogo
+        Navigator.pop(context); // Cerrar diálogo de progreso
         _installApk(savePath);
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _status = 'Error: ${e.toString()}';
-          _downloading = false;
-        });
-        // Esperar un poco para que el usuario lea el error o agregar botón de cerrar
-        debugPrint('Error descarga: $e');
         if (CancelToken.isCancel(e as dynamic)) {
-           // Cancelado por usuario
+           // Cancelado
         } else {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Error al descargar: $e'), backgroundColor: Colors.red),
-           );
+           _showErrorDialog('Error al descargar: $e');
            Navigator.pop(context);
         }
       }
@@ -226,22 +230,19 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
   }
 
   Future<void> _installApk(String path) async {
-    debugPrint('Intentando instalar desde: $path');
-    
     final file = File(path);
     if (!file.existsSync()) {
-      _showErrorDialog('El archivo descargado no se encuentra en:\n$path');
+      _showErrorDialog('Archivo no encontrado: $path');
       return;
     }
 
-    // Algunos dispositivos necesitan un pequeño delay para liberar el lock del archivo
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Pequeña espera
+    await Future.delayed(const Duration(milliseconds: 300));
 
     final result = await OpenFile.open(path, type: "application/vnd.android.package-archive");
-    debugPrint('Resultado instalación: ${result.message}');
     
     if (result.type != ResultType.done) {
-       _showErrorDialog('No se pudo abrir el instalador:\n${result.message}\n\nTipo: ${result.type}');
+       _showErrorDialog('Error al abrir instalador:\n${result.message}\n(${result.type})');
     }
   }
 
@@ -250,7 +251,7 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('⚠️ Error de Instalación'),
+        title: const Text('⚠️ Error'),
         content: Text(message),
         actions: [
           TextButton(
