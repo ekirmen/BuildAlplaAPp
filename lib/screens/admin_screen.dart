@@ -524,6 +524,102 @@ class _UsersTabState extends State<_UsersTab> {
     );
   }
 
+  void _showEditUserDialog(Map<String, dynamic> user) {
+    final usernameController = TextEditingController(text: user['username']);
+    final passwordController = TextEditingController();
+    final nameController = TextEditingController(text: user['name']);
+    String selectedRole = user['role'] ?? 'viewer';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('✏️ Editar Usuario'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Usuario',
+                  border: OutlineInputBorder(),
+                  enabled: false, // No se puede cambiar el username
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Nueva Contraseña (Opcional)',
+                  hintText: 'Dejar vacío para mantener actual',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre Completo',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: const InputDecoration(
+                  labelText: 'Rol',
+                  border: OutlineInputBorder(),
+                ),
+                items: ['admin', 'supervisor', 'viewer']
+                    .map((role) => DropdownMenuItem(
+                          value: role,
+                          child: Text(role),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  selectedRole = value!;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final authService = AuthService(Supabase.instance.client);
+              final (success, message) = await authService.updateUser(
+                username: usernameController.text,
+                name: nameController.text,
+                role: selectedRole,
+                newPassword: passwordController.text.isNotEmpty ? passwordController.text : null,
+              );
+
+              if (!context.mounted) return;
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(message),
+                  backgroundColor: success ? Colors.green : Colors.red,
+                ),
+              );
+
+              if (success) {
+                _loadUsers();
+              }
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -576,16 +672,27 @@ class _UsersTabState extends State<_UsersTab> {
                     style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                   ),
                   subtitle: Text('@${user['username']}'),
-                  trailing: Chip(
-                    label: Text(
-                      user['role']?.toUpperCase() ?? '',
-                      style: const TextStyle(fontSize: 10),
-                    ),
-                    backgroundColor: user['role'] == 'admin'
-                        ? Colors.red.shade100
-                        : user['role'] == 'supervisor'
-                            ? Colors.orange.shade100
-                            : Colors.blue.shade100,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Chip(
+                        label: Text(
+                          user['role']?.toUpperCase() ?? '',
+                          style: const TextStyle(fontSize: 10),
+                        ),
+                        backgroundColor: user['role'] == 'admin'
+                            ? Colors.red.shade100
+                            : user['role'] == 'supervisor'
+                                ? Colors.orange.shade100
+                                : Colors.blue.shade100,
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _showEditUserDialog(user),
+                        tooltip: 'Editar Usuario',
+                      ),
+                    ],
                   ),
                 ),
               );
