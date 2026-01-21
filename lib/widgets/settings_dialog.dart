@@ -47,9 +47,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           SwitchListTile(
-            title: Text(
-              'Notificaciones',
-              style: GoogleFonts.poppins(),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Notificaciones',
+                style: GoogleFonts.poppins(),
+              ),
             ),
             subtitle: Text(
               'Activar alertas en el teléfono',
