@@ -1,0 +1,41 @@
+name: alplaapp
+description: "Dashboard Industrial para Alpla - Gestión de Paradas y Eficiencia"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+  
+  # UI & Design
+  google_fonts: ^6.1.0
+  fl_chart: ^0.68.0
+  intl: ^0.19.0
+  
+  # Backend & Data
+  supabase_flutter: ^2.5.6
+  shared_preferences: ^2.2.3
+  
+  # Utils
+  crypto: ^3.0.3
+  uuid: ^4.4.0
+  flutter_local_notifications: ^19.5.0
+  http: ^1.6.0
+  package_info_plus: ^9.0.0
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+
