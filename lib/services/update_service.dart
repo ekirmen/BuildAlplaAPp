@@ -10,9 +10,11 @@ import 'package:open_file/open_file.dart';
 import 'package:permission_handler/permission_handler.dart'; 
 
 class UpdateService {
-  // ... (existing code)
+  static const String githubUser = 'ekirmen';
+  static const String githubRepo = 'BuildAlplaAPp';
 
 
+  Future<void> checkForUpdates(BuildContext context, {bool showNoUpdate = false}) async {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       final String currentVersion = packageInfo.version;
