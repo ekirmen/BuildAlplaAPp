@@ -53,3 +53,9 @@ node_modules/
 **/key.jks
 **/key.properties
 **/.env
+
+**/service-account.json
+
+**/google-services.json
+
+**/GoogleService-Info.plist
