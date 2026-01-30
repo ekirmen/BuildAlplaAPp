@@ -1,0 +1,29 @@
+remote: error: GH013: Repository rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/ekirmen/BuildAlplaAPp/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— Google Cloud Service Account Credentials ——————————        
+remote:        locations:        
+remote:          - commit: 47c708c02154057ecafe954e9d26cc13936db5c7        
+remote:            path: supabase/functions/push-notification/codigo_para_dashboard.ts:10        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/ekirmen/BuildAlplaAPp/security/secret-scanning/unblock-secret/38yzeuZb6jqiBpAnsIWPil0yR5H        
+remote:             
+remote: 
+remote: 
+To https://github.com/ekirmen/BuildAlplaAPp.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/ekirmen/BuildAlplaAPp.git'
